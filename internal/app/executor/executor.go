@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/kubeshop/kubtest-executor-template/internal/pkg/repository/result"
-	"github.com/kubeshop/kubtest-executor-template/internal/pkg/worker"
+	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/repository/result"
+	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/worker"
 
 	// TODO move server to kubtest/pkg
-	"github.com/kubeshop/kubtest-executor-template/internal/pkg/server"
+	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/server"
 
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
 )

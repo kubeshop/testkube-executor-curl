@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kubeshop/kubtest-executor-template/internal/pkg/repository/result"
-	"github.com/kubeshop/kubtest-executor-template/pkg/runner"
+	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/repository/result"
+	"github.com/kubeshop/kubtest-executor-curl-example/pkg/runner"
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
 	"github.com/kubeshop/kubtest/pkg/log"
 	"go.mongodb.org/mongo-driver/mongo"

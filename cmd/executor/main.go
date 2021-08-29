@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/kelseyhightower/envconfig"
-	"github.com/kubeshop/kubtest-executor-template/internal/app/executor"
-	"github.com/kubeshop/kubtest-executor-template/internal/pkg/repository/result"
-	"github.com/kubeshop/kubtest-executor-template/internal/pkg/storage"
+	"github.com/kubeshop/kubtest-executor-curl-example/internal/app/executor"
+	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/repository/result"
+	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/storage"
 )
 
 const DatabaseName = "template-executor"
