@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
+	"github.com/kubeshop/kubtest/pkg/process"
 )
 
 type CurlRunnerInput struct {
@@ -32,7 +32,7 @@ func (r *CurlRunner) Run(input io.Reader, params map[string]string) kubtest.Exec
 		}
 	}
 
-	output, err := exec.Command(runnerInput.Command[0], runnerInput.Command[1:]...).Output()
+	output, err := process.Execute(runnerInput.Command[0], runnerInput.Command[1:]...)
 	if err != nil {
 		log.Fatal(err)
 	}
