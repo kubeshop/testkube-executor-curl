@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/repository/result"
+	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/storage"
 	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/worker"
 
 	// TODO move server to kubtest/pkg
@@ -26,6 +27,7 @@ func NewCurlExecutor() CurlExecutor {
 
 	e := CurlExecutor{
 		HTTPServer: server.NewServer(httpConfig),
+		Repository: &storage.MapRepository{},
 		Worker:     worker.NewWorker(),
 	}
 
