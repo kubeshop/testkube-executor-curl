@@ -25,7 +25,7 @@ const ConcurrentExecutions = 4
 // NewCurlExecutor returns new CurlExecutor instance
 func NewCurlExecutor() CurlExecutor {
 	var httpConfig server.Config
-	envconfig.Process("EXECUTOR", &httpConfig)
+	envconfig.Process("EXECUTOR_PORT", &httpConfig)
 
 	e := CurlExecutor{
 		HTTPServer: server.NewServer(httpConfig),
