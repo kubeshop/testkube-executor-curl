@@ -22,7 +22,7 @@ func NewWorker() Worker {
 		Concurrency: 4,
 		BufferSize:  WorkerQueueBufferSize,
 		// TODO implement runner for new executor
-		Runner: &runner.ExampleRunner{},
+		Runner: &runner.CurlRunner{},
 		Log:    log.DefaultLogger,
 	}
 }
