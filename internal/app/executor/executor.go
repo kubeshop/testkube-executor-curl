@@ -20,14 +20,13 @@ import (
 const ConcurrentExecutions = 4
 
 // NewTemplateExecutor returns new TemplateExecutor instance
-func NewTemplateExecutor(resultRepository result.Repository) TemplateExecutor {
+func NewTemplateExecutor() TemplateExecutor {
 	var httpConfig server.Config
 	envconfig.Process("EXECUTOR", &httpConfig)
 
 	e := TemplateExecutor{
 		HTTPServer: server.NewServer(httpConfig),
-		Repository: resultRepository,
-		Worker:     worker.NewWorker(resultRepository),
+		Worker:     worker.NewWorker(),
 	}
 
 	return e

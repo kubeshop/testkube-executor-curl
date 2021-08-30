@@ -17,11 +17,10 @@ import (
 const EmptyQueueWaitTime = 2 * time.Second
 const WorkerQueueBufferSize = 10000
 
-func NewWorker(resultsRepository result.Repository) Worker {
+func NewWorker() Worker {
 	return Worker{
 		Concurrency: 4,
 		BufferSize:  WorkerQueueBufferSize,
-		Repository:  resultsRepository,
 		// TODO implement runner for new executor
 		Runner: &runner.ExampleRunner{},
 		Log:    log.DefaultLogger,
