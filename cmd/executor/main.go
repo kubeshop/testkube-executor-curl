@@ -6,7 +6,7 @@ import (
 
 func main() {
 
-	exec := executor.NewTemplateExecutor()
+	exec := executor.NewCurlExecutor()
 	exec.Init()
 	panic(exec.Run())
 

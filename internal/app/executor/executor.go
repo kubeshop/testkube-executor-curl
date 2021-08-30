@@ -19,12 +19,12 @@ import (
 // ConcurrentExecutions per node
 const ConcurrentExecutions = 4
 
-// NewTemplateExecutor returns new TemplateExecutor instance
-func NewTemplateExecutor() TemplateExecutor {
+// NewCurlExecutor returns new CurlExecutor instance
+func NewCurlExecutor() CurlExecutor {
 	var httpConfig server.Config
 	envconfig.Process("EXECUTOR", &httpConfig)
 
-	e := TemplateExecutor{
+	e := CurlExecutor{
 		HTTPServer: server.NewServer(httpConfig),
 		Worker:     worker.NewWorker(),
 	}
@@ -32,19 +32,19 @@ func NewTemplateExecutor() TemplateExecutor {
 	return e
 }
 
-type TemplateExecutor struct {
+type CurlExecutor struct {
 	server.HTTPServer
 	Repository result.Repository
 	Worker     worker.Worker
 }
 
-func (p *TemplateExecutor) Init() {
+func (p *CurlExecutor) Init() {
 	executions := p.Routes.Group("/executions")
 	executions.Post("/", p.StartExecution())
 	executions.Get("/:id", p.GetExecution())
 }
 
-func (p *TemplateExecutor) StartExecution() fiber.Handler {
+func (p *CurlExecutor) StartExecution() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
 		var request kubtest.ExecutionRequest
@@ -66,7 +66,7 @@ func (p *TemplateExecutor) StartExecution() fiber.Handler {
 	}
 }
 
-func (p TemplateExecutor) GetExecution() fiber.Handler {
+func (p CurlExecutor) GetExecution() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		execution, err := p.Repository.Get(context.Background(), c.Params("id"))
 		if err != nil {
@@ -77,7 +77,7 @@ func (p TemplateExecutor) GetExecution() fiber.Handler {
 	}
 }
 
-func (p TemplateExecutor) Run() error {
+func (p CurlExecutor) Run() error {
 	executionsQueue := p.Worker.PullExecutions()
 	p.Worker.Run(executionsQueue)
 

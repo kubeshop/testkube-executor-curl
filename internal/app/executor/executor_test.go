@@ -1,16 +1,14 @@
 package executor
 
 import (
-	"context"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/kubeshop/kubtest/pkg/api/kubtest"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTemplateExecutor_StartExecution(t *testing.T) {
+func TestCurlExecutor_StartExecution(t *testing.T) {
 
 	t.Run("runs newman runner command", func(t *testing.T) {
 		// given
@@ -33,31 +31,9 @@ func TestTemplateExecutor_StartExecution(t *testing.T) {
 
 }
 
-func GetTestExecutor(t *testing.T) TemplateExecutor {
-	templateExecutor := NewTemplateExecutor()
-	templateExecutor.Init()
+func GetTestExecutor(t *testing.T) CurlExecutor {
+	curlExecutor := NewCurlExecutor()
+	curlExecutor.Init()
 
-	return templateExecutor
-}
-
-// r RepoMock
-type RepoMock struct {
-	Object kubtest.Execution
-	Error  error
-}
-
-func (r *RepoMock) Get(ctx context.Context, id string) (result kubtest.Execution, err error) {
-	return r.Object, r.Error
-}
-
-func (r *RepoMock) Insert(ctx context.Context, result kubtest.Execution) (err error) {
-	return r.Error
-}
-
-func (r *RepoMock) QueuePull(ctx context.Context) (result kubtest.Execution, err error) {
-	return r.Object, r.Error
-}
-
-func (r *RepoMock) Update(ctx context.Context, result kubtest.Execution) (err error) {
-	return r.Error
+	return curlExecutor
 }
