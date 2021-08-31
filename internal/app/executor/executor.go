@@ -89,7 +89,7 @@ func (p CurlExecutor) Run() error {
 
 func (p CurlExecutor) RunExecution(ctx context.Context, e kubtest.Execution) (kubtest.Execution, error) {
 	e.Start()
-	runner := runner.CurlRunner{}
+	runner := runner.CurlRunner{Log: p.Log}
 	result := runner.Run(strings.NewReader(e.ScriptContent), e.Params)
 	e.Result = &result
 

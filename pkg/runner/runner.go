@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
 	"github.com/kubeshop/kubtest/pkg/process"
+	"go.uber.org/zap"
 )
+
+const CurlAdditionalFlags = "-Is"
 
 type CurlRunnerInput struct {
 	Command        []string `json:"command"`
@@ -21,6 +23,7 @@ type CurlRunnerInput struct {
 
 // CurlRunner is used to run curl commands.
 type CurlRunner struct {
+	Log *zap.SugaredLogger
 }
 
 func (r *CurlRunner) Run(input io.Reader, params map[string]string) kubtest.ExecutionResult {
@@ -31,10 +34,15 @@ func (r *CurlRunner) Run(input io.Reader, params map[string]string) kubtest.Exec
 			Status: kubtest.ExecutionStatusError,
 		}
 	}
-
-	output, err := process.Execute(runnerInput.Command[0], runnerInput.Command[1:]...)
+	command := runnerInput.Command[0]
+	runnerInput.Command[0] = CurlAdditionalFlags
+	output, err := process.Execute(command, runnerInput.Command...)
 	if err != nil {
-		log.Fatal(err)
+		r.Log.Errorf("Error occured when running a command %s", err)
+		return kubtest.ExecutionResult{
+			Status:       kubtest.ExecutionStatusError,
+			ErrorMessage: fmt.Sprintf("Error occured when running a command %s", err),
+		}
 	}
 
 	outputString := string(output)

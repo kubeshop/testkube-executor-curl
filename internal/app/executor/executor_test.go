@@ -10,14 +10,19 @@ import (
 
 func TestCurlExecutor_StartExecution(t *testing.T) {
 
-	t.Run("runs newman runner command", func(t *testing.T) {
+	t.Run("Runs Curl executor with a get command.", func(t *testing.T) {
 		// given
 		executor := GetTestExecutor(t)
 
 		req := httptest.NewRequest(
 			"POST",
 			"/v1/executions/",
-			strings.NewReader(`{"type": "template/collection", "metadata": "{\"info\":{\"name\":\"kubtestExampleCollection\"}}"}`),
+			strings.NewReader(`
+			{
+				"type": "curl",
+				"name": "test1",
+				"metadata": "{\"command\": [\"curl\", \"https://reqbin.com/echo/get/json\", \"-H\", \"'Accept: application/json'\"],\"expected_status\":200,\"expected_body\":\"{\\\"success\\\":\\\"true\\\"}\"}"
+			}`),
 		)
 
 		// when

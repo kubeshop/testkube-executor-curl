@@ -16,7 +16,7 @@ type MapRepository struct {
 func (r *MapRepository) Get(ctx context.Context, id string) (kubtest.Execution, error) {
 	v, ok := r.data.Load(id)
 	if !ok {
-		return kubtest.Execution{}, fmt.Errorf("No executoion with the id %s", id)
+		return kubtest.Execution{}, fmt.Errorf("No execution with the id %s", id)
 	}
 
 	return v.(kubtest.Execution), nil
