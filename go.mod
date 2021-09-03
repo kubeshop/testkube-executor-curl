@@ -6,7 +6,7 @@ require (
 	github.com/gofiber/adaptor/v2 v2.1.11
 	github.com/gofiber/fiber/v2 v2.18.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/kubeshop/kubtest v0.0.0-20210827121259-a842cc1c6263
+	github.com/kubeshop/kubtest v0.0.0-20210901142201-eaf6ab09fb6b
 	github.com/moogar0880/problems v0.1.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/stretchr/testify v1.7.0

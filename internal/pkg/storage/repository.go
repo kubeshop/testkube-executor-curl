@@ -6,10 +6,16 @@ import (
 	"sync"
 
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type MapRepository struct {
 	data sync.Map
+}
+
+// NewMapRepository creates a MapRepository
+func NewMapRepository() *MapRepository {
+	return &MapRepository{}
 }
 
 // Get gets execution result by id
@@ -41,8 +47,14 @@ func (r *MapRepository) QueuePull(ctx context.Context) (kubtest.Execution, error
 	r.data.Range(func(key, value interface{}) bool {
 		id = key.(string)
 		execution = value.(kubtest.Execution)
-		return false
+		//when false is returned range function will exit,
+		//the queued execution is needed so false is returned when the execution has status queued
+		return execution.Status != kubtest.ExecutionStatusQueued
 	})
-	r.data.Delete(id)
+	if len(id) == 0 || !execution.IsQueued() {
+		return execution, mongo.ErrNoDocuments
+	}
+	execution.Status = kubtest.ExecutionStatusPending
+	r.data.Store(id, execution)
 	return execution, nil
 }

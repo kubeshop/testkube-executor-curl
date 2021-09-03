@@ -5,6 +5,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/storage"
+	"github.com/kubeshop/kubtest-executor-curl-example/pkg/runner"
+	"github.com/kubeshop/kubtest/pkg/executor/server"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,9 +39,12 @@ func TestCurlExecutor_StartExecution(t *testing.T) {
 
 }
 
-func GetTestExecutor(t *testing.T) CurlExecutor {
-	curlExecutor := NewCurlExecutor()
-	curlExecutor.Init()
+func GetTestExecutor(t *testing.T) server.Executor {
+	repo := storage.NewMapRepository()
+	runner := runner.NewCurlRunner(nil)
+	exec := server.NewExecutor(repo, runner)
 
-	return curlExecutor
+	exec.Init()
+
+	return exec
 }

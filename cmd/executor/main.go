@@ -1,13 +1,17 @@
 package main
 
 import (
-	"github.com/kubeshop/kubtest-executor-curl-example/internal/app/executor"
+	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/storage"
+	"github.com/kubeshop/kubtest-executor-curl-example/pkg/runner"
+	"github.com/kubeshop/kubtest/pkg/executor/server"
+	"github.com/kubeshop/kubtest/pkg/ui"
 )
 
 func main() {
 
-	exec := executor.NewCurlExecutor()
-	exec.Init()
-	panic(exec.Run())
+	repo := storage.NewMapRepository()
+	runner := runner.NewCurlRunner(nil)
+	exec := server.NewExecutor(repo, runner)
 
+	ui.ExitOnError("Running executor", exec.Init().Run())
 }

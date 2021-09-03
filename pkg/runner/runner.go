@@ -3,12 +3,12 @@ package runner
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
+	"github.com/kubeshop/kubtest/pkg/log"
 	"github.com/kubeshop/kubtest/pkg/process"
 	"go.uber.org/zap"
 )
@@ -26,9 +26,17 @@ type CurlRunner struct {
 	Log *zap.SugaredLogger
 }
 
-func (r *CurlRunner) Run(input io.Reader, params map[string]string) kubtest.ExecutionResult {
+func NewCurlRunner(logger *zap.SugaredLogger) *CurlRunner {
+	r := CurlRunner{Log: log.DefaultLogger}
+	if logger != nil {
+		r.Log = logger
+	}
+	return &r
+}
+
+func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 	var runnerInput CurlRunnerInput
-	err := json.NewDecoder(input).Decode(&runnerInput)
+	err := json.Unmarshal([]byte(execution.ScriptContent), &runnerInput)
 	if err != nil {
 		return kubtest.ExecutionResult{
 			Status: kubtest.ExecutionStatusError,
