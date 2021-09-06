@@ -1,92 +1,20 @@
 # Creating a new kubtest executor
+
 In order to be able to run tests using some new tools for which there is no executor, there is possibility to create a custom executor from the [kubetest-executor-template](https://github.com/kubeshop/kubtest-executor-template).
 
 ## Steps for creating executor
 
+### Setup repository
+
 - Fork from [kubetest-executor-template](https://github.com/kubeshop/kubtest-executor-template).
 - Clone the newly created repo.
 - Rename the go module from kubetest-executor-template to the new name & run `go mod tidy`.
-- Rename TemplateExecutor to the name that will be used for new executor.
-- Make the executor from the templated code
-  The executor is a http server that serves the routes as defined in OpenApi definitions for [Executor](https://kubeshop.github.io/kubtest/openapi/#operations-tag-executor).
-  Routes are bound to the `StartExecution` and `GetExecution` functions from the [executor.go](https://github.com/kubeshop/kubtest-executor-template/blob/main/internal/app/executor/executor.go)
-  - `GetExecution` just serves the execution results from the repository used for storing(in the kubetest-executor-template it is implemented using mongo DB).
-  - `StartExecution` can be implemented using a worker that will run the executions or simpler with a goroutine can be spawn for each execution and when the execution is done the result is stored in the repository.
-    - Worker example can be found in the [kubetest-executor-template](https://github.com/kubeshop/kubtest-executor-template) -> [here](https://github.com/kubeshop/kubtest-executor-template/blob/main/internal/app/executor/executor.go)
 
-    ```go
-    func (p *TemplateExecutor) StartExecution() fiber.Handler {
-        return func(c *fiber.Ctx) error {
+### Implement Runner Components
 
-            var request kubtest.ExecutionRequest
-            err := json.Unmarshal(c.Body(), &request)
-            if err != nil {
-                return p.Error(c, http.StatusBadRequest, err)
-            }
+[Kubtest](https://github.com/kubeshop/kubtest) provides the components to help implement a new executor and only the explicit runner needs to be implemented.
 
-            execution := kubtest.NewExecution(string(request.Metadata), request.Params)
-            err = p.Repository.Insert(context.Background(), execution)
-            if err != nil {
-                return p.Error(c, http.StatusInternalServerError, err)
-
-            }
-
-            p.Log.Infow("starting new execution", "execution", execution)
-            c.Response().Header.SetStatusCode(201)
-            return c.JSON(execution)
-        }
-    }
-    ```
-
-    - Goroutine example can be found in the [kubtest-executor-curl-example](https://github.com/kubeshop/kubtest-executor-curl-example) -> [here](https://github.com/kubeshop/kubtest-executor-curl-example/blob/main/internal/app/executor/executor.go) implemented for CURL command
-
-    ```go
-    func (p *CurlExecutor) StartExecution() fiber.Handler {
-        return func(c *fiber.Ctx) error {
-
-            var request kubtest.ExecutionRequest
-            err := json.Unmarshal(c.Body(), &request)
-            if err != nil {
-                return p.Error(c, http.StatusBadRequest, err)
-            }
-
-            execution := kubtest.NewExecution(string(request.Metadata), request.Params)
-            err = p.Repository.Insert(context.Background(), execution)
-            if err != nil {
-                return p.Error(c, http.StatusInternalServerError, err)
-
-            }
-            go func(ctx context.Context, e kubtest.Execution) {
-                resultExecution, _ := p.RunExecution(ctx, e)
-                p.Log.Infof("Execution with Id %s, returned %s", resultExecution.Id, resultExecution.Status)
-            }(c.UserContext(), execution)
-
-            p.Log.Infow("starting new execution", "execution", execution)
-            c.Response().Header.SetStatusCode(201)
-            return c.JSON(execution)
-        }
-    }
-    ```
-
-    Where `ExecutionRequest` is defined as:
-
-    ```go
-    // scripts execution request body
-    type ExecutionRequest struct {
-        // script type
-        Type_ string `json:"type,omitempty"`
-        // script execution custom name
-        Name string `json:"name,omitempty"`
-        // execution params passed to executor
-        Params map[string]string `json:"params,omitempty"`
-        // script content as string (content depends from executor)
-        Metadata string `json:"metadata,omitempty"`
-    }
-    ```
-
-    and the test script will be stored in the `Params` and `Metadata` fields.
-
-- Define a input format for the tests.
+- Define an input format for the tests.
   In order to communicate effectivele with executor we need to define a format on how to structure the tests. And bellow is an example for the curl based tests.
 
     ```js
@@ -101,18 +29,19 @@ In order to be able to run tests using some new tools for which there is no exec
     }
     ```
 
-    It will be stored in the `Metadata` field of the request body and the request body will look like:
+    It will be stored in the `content` field of the request body and the request body will look like:
 
     ```js
     {
         "type": "curl",
         "name": "test1",
-        "metadata": "{\"command\": [\"curl\", \"https://reqbin.com/echo/get/json\", \"-H\", \"'Accept: application/json'\"],\"expected_status\":200,\"expected_body\":\"{\\\"success\\\":\\\"true\\\"}\"}"
+        "content": "{\"command\": [\"curl\", \"https://reqbin.com/echo/get/json\", \"-H\", \"'Accept: application/json'\"],\"expected_status\":200,\"expected_body\":\"{\\\"success\\\":\\\"true\\\"}\"}"
     }
     ```
 
-- Create execution repository.
-  The repository the interface bellow, it can use inmemory storage,a database or whatever fits the needs.
+- Create execution storage repository.
+  There is a storage repository `result.MongoRepository` provided implemented using mongo DB but there is the possibility to provide a new storage type.
+  The repository needs to implement the interface bellow, it can use inmemory storage,a database or whatever fits the needs.
 
     ```go
     type Repository interface {
@@ -142,35 +71,17 @@ In order to be able to run tests using some new tools for which there is no exec
     ```
 
 - Create new runner.
-  Runner should contain the logic to run the test and to verify the expectations.
-  The `StartExecute` function calls the `RunExecution` which calls the runner and stores the results in the repository
+  Runner should contain the logic to run the test and to verify the expectations based on the interface from bellow.
 
     ```go
-    func (p CurlExecutor) RunExecution(ctx context.Context, e kubtest.Execution) (kubtest.Execution, error) {
-        e.Start()
-        runner := runner.CurlRunner{Log: p.Log}
-        result := runner.Run(strings.NewReader(e.ScriptContent), e.Params)
-        e.Result = &result
-
-        var err error
-        if result.ErrorMessage != "" {
-            e.Error()
-            err = fmt.Errorf("execution error: %s", result.ErrorMessage)
-        } else {
-            e.Success()
-        }
-
-        e.Stop()
-        // we want always write even if there is error
-        if werr := p.Repository.Update(ctx, e); werr != nil {
-            return e, werr
-        }
-
-        return e, err
+    // Runner interface to abstract runners implementations
+    type Runner interface {
+        // Run takes Execution data and returns execution result
+        Run(execution kubtest.Execution) kubtest.ExecutionResult
     }
     ```
 
-  For the curl executor there is the struct that matches the exact structure of the test input format which runner will take as the input(described above).
+  For the curl executor provide the struct that matches the exact structure of the test input format which runner will take as the input(described above).
 
     ```go
     type CurlRunnerInput struct {
@@ -183,9 +94,9 @@ In order to be able to run tests using some new tools for which there is no exec
   And bellow is the business logic for the curl executor and it executes the curl command given as input, takes the output, tests the expectations and returns the result.
 
     ```go
-    func (r *CurlRunner) Run(input io.Reader, params map[string]string) kubtest.ExecutionResult {
+    func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
         var runnerInput CurlRunnerInput
-        err := json.NewDecoder(input).Decode(&runnerInput)
+        err := json.Unmarshal([]byte(execution.ScriptContent), &runnerInput)
         if err != nil {
             return kubtest.ExecutionResult{
                 Status: kubtest.ExecutionStatusError,
