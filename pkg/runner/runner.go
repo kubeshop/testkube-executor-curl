@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const CurlAdditionalFlags = "-Is"
+const CurlAdditionalFlags = "-is"
 
 type CurlRunnerInput struct {
 	Command        []string `json:"command"`
