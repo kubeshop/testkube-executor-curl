@@ -25,11 +25,24 @@ Please follow to main kubtest repository for reporting any [issues](https://gith
 
 ## Details
 
-- TODO write details
+Curl executor is a very simple one, it runs a curl command given as the input and check the response for expected status and body, the input is of form
 
-## Architecture
+```js
+{
+  "command": [
+    "curl",
+    "https://reqbin.com/echo/get/json",
+    "-H",
+    "'Accept: application/json'"
+  ],
+  "expected_status": 200,
+  "expected_body": "{\"success\":\"true\"}"
+}
+```
 
-- TODO add architecture diagrams
+the executor will check if the response has `expected_status` and if body of the response contains the `expected_body`.
+
+The type of the test CRD should be `curl/test`.
 
 ## API
 
