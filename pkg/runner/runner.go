@@ -90,6 +90,5 @@ func getResponseCode(curlOutput string) (int, error) {
 	if len(matches) == 0 {
 		return -1, fmt.Errorf("Could not find a response status in the command output.")
 	}
-	result, _ := strconv.Atoi(matches[1])
-	return result, nil
+	return strconv.Atoi(matches[1])
 }
