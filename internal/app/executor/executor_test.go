@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kubeshop/kubtest-executor-curl-example/internal/pkg/storage"
-	"github.com/kubeshop/kubtest-executor-curl-example/pkg/runner"
+	"github.com/kubeshop/kubtest-executor-curl/internal/pkg/storage"
+	"github.com/kubeshop/kubtest-executor-curl/pkg/runner"
 	"github.com/kubeshop/kubtest/pkg/executor/server"
 	"github.com/stretchr/testify/assert"
 )
