@@ -54,7 +54,14 @@ func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 	}
 
 	outputString := string(output)
-	responseStatus := getResponseCode(outputString)
+	responseStatus, err := getResponseCode(outputString)
+	if err != nil {
+		return kubtest.ExecutionResult{
+			Status:       kubtest.ExecutionStatusError,
+			RawOutput:    outputString,
+			ErrorMessage: err.Error(),
+		}
+	}
 	if responseStatus != runnerInput.ExpectedStatus {
 		return kubtest.ExecutionResult{
 			Status:       kubtest.ExecutionStatusError,
@@ -77,9 +84,11 @@ func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 	}
 }
 
-func getResponseCode(curlOutput string) int {
+func getResponseCode(curlOutput string) (int, error) {
 	re := regexp.MustCompile(`\A\S*\s(\d+)`)
 	matches := re.FindStringSubmatch(curlOutput)
-	result, _ := strconv.Atoi(matches[1])
-	return result
+	if len(matches) == 0 {
+		return -1, fmt.Errorf("Could not find a response status in the command output.")
+	}
+	return strconv.Atoi(matches[1])
 }
