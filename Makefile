@@ -1,6 +1,6 @@
 .PHONY: test cover 
 
-NAME ?= template
+NAME ?= curl
 BIN_DIR ?= $(HOME)/bin
 GITHUB_TOKEN ?= "SET_ME"
 USER ?= $(USER)
@@ -21,6 +21,9 @@ build:
 
 docker-build-executor: 
 	docker build -t $(NAME)-executor -f build/executor/Dockerfile .
+
+docker-build-agent: 
+	docker build -t kubtest/$(NAME)-agent -f build/agent/Dockerfile .
 
 install-swagger-codegen-mac: 
 	brew install swagger-codegen
