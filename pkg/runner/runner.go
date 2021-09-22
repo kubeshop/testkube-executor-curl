@@ -58,14 +58,14 @@ func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 	if err != nil {
 		return kubtest.ExecutionResult{
 			Status:       kubtest.ExecutionStatusError,
-			RawOutput:    outputString,
+			Output:       outputString,
 			ErrorMessage: err.Error(),
 		}
 	}
 	if responseStatus != runnerInput.ExpectedStatus {
 		return kubtest.ExecutionResult{
 			Status:       kubtest.ExecutionStatusError,
-			RawOutput:    outputString,
+			Output:       outputString,
 			ErrorMessage: fmt.Sprintf("Response statut don't match expected %d got %d", runnerInput.ExpectedStatus, responseStatus),
 		}
 	}
@@ -73,14 +73,14 @@ func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 	if !strings.Contains(outputString, runnerInput.ExpectedBody) {
 		return kubtest.ExecutionResult{
 			Status:       kubtest.ExecutionStatusError,
-			RawOutput:    outputString,
+			Output:       outputString,
 			ErrorMessage: fmt.Sprintf("Response doesn't contain body: %s", runnerInput.ExpectedBody),
 		}
 	}
 
 	return kubtest.ExecutionResult{
-		Status:    kubtest.ExecutionStatusSuceess,
-		RawOutput: outputString,
+		Status: kubtest.ExecutionStatusSuceess,
+		Output: outputString,
 	}
 }
 
