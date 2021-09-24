@@ -39,7 +39,7 @@ func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 	err := json.Unmarshal([]byte(execution.ScriptContent), &runnerInput)
 	if err != nil {
 		return kubtest.ExecutionResult{
-			Status: kubtest.ExecutionStatusError,
+			Status: kubtest.ResultError,
 		}
 	}
 	command := runnerInput.Command[0]
@@ -48,7 +48,7 @@ func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 	if err != nil {
 		r.Log.Errorf("Error occured when running a command %s", err)
 		return kubtest.ExecutionResult{
-			Status:       kubtest.ExecutionStatusError,
+			Status:       kubtest.ResultError,
 			ErrorMessage: fmt.Sprintf("Error occured when running a command %s", err),
 		}
 	}
@@ -57,14 +57,14 @@ func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 	responseStatus, err := getResponseCode(outputString)
 	if err != nil {
 		return kubtest.ExecutionResult{
-			Status:       kubtest.ExecutionStatusError,
+			Status:       kubtest.ResultError,
 			Output:       outputString,
 			ErrorMessage: err.Error(),
 		}
 	}
 	if responseStatus != runnerInput.ExpectedStatus {
 		return kubtest.ExecutionResult{
-			Status:       kubtest.ExecutionStatusError,
+			Status:       kubtest.ResultError,
 			Output:       outputString,
 			ErrorMessage: fmt.Sprintf("Response statut don't match expected %d got %d", runnerInput.ExpectedStatus, responseStatus),
 		}
@@ -72,14 +72,14 @@ func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 
 	if !strings.Contains(outputString, runnerInput.ExpectedBody) {
 		return kubtest.ExecutionResult{
-			Status:       kubtest.ExecutionStatusError,
+			Status:       kubtest.ResultError,
 			Output:       outputString,
 			ErrorMessage: fmt.Sprintf("Response doesn't contain body: %s", runnerInput.ExpectedBody),
 		}
 	}
 
 	return kubtest.ExecutionResult{
-		Status: kubtest.ExecutionStatusSuceess,
+		Status: kubtest.ResultSuceess,
 		Output: outputString,
 	}
 }
@@ -88,7 +88,7 @@ func getResponseCode(curlOutput string) (int, error) {
 	re := regexp.MustCompile(`\A\S*\s(\d+)`)
 	matches := re.FindStringSubmatch(curlOutput)
 	if len(matches) == 0 {
-		return -1, fmt.Errorf("Could not find a response status in the command output.")
+		return -1, fmt.Errorf("could not find a response status in the command output")
 	}
 	return strconv.Atoi(matches[1])
 }

@@ -22,7 +22,7 @@ func NewMapRepository() *MapRepository {
 func (r *MapRepository) Get(ctx context.Context, id string) (kubtest.Execution, error) {
 	v, ok := r.data.Load(id)
 	if !ok {
-		return kubtest.Execution{}, fmt.Errorf("No execution with the id %s", id)
+		return kubtest.Execution{}, fmt.Errorf("no execution with the id %s", id)
 	}
 
 	return v.(kubtest.Execution), nil
@@ -39,6 +39,19 @@ func (r *MapRepository) Update(ctx context.Context, result kubtest.Execution) er
 	return r.Insert(ctx, result)
 }
 
+// Update updates execution result
+func (r *MapRepository) UpdateResult(ctx context.Context, id string, result kubtest.ExecutionResult) error {
+	v, ok := r.data.Load(id)
+	if !ok {
+		return fmt.Errorf("no execution with the id %s", id)
+	}
+
+	execution := v.(kubtest.Execution)
+	execution.ExecutionResult = &result
+
+	return r.Insert(ctx, execution)
+}
+
 // QueuePull pulls from queue and locks other clients to read (changes state from queued->pending)
 func (r *MapRepository) QueuePull(ctx context.Context) (kubtest.Execution, error) {
 	var id string
@@ -49,12 +62,12 @@ func (r *MapRepository) QueuePull(ctx context.Context) (kubtest.Execution, error
 		execution = value.(kubtest.Execution)
 		//when false is returned range function will exit,
 		//the queued execution is needed so false is returned when the execution has status queued
-		return execution.Status != kubtest.ExecutionStatusQueued
+		return execution.ExecutionResult.Status != kubtest.ResultQueued
 	})
-	if len(id) == 0 || !execution.IsQueued() {
+	if len(id) == 0 || !execution.ExecutionResult.IsQueued() {
 		return execution, mongo.ErrNoDocuments
 	}
-	execution.Status = kubtest.ExecutionStatusPending
+	execution.ExecutionResult.Status = kubtest.ResultPending
 	r.data.Store(id, execution)
 	return execution, nil
 }
