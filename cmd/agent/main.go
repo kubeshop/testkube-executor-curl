@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/kubeshop/kubtest-executor-curl/pkg/runner"
-	"github.com/kubeshop/kubtest/pkg/api/kubtest"
+	"github.com/kubeshop/kubtest/pkg/api/v1/kubtest"
 )
 
 func main() {
