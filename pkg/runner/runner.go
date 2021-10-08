@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kubeshop/kubtest/pkg/api/v1/kubtest"
-	"github.com/kubeshop/kubtest/pkg/log"
-	"github.com/kubeshop/kubtest/pkg/process"
+	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
+	"github.com/kubeshop/testkube/pkg/log"
+	"github.com/kubeshop/testkube/pkg/process"
 	"go.uber.org/zap"
 )
 
@@ -34,12 +34,12 @@ func NewCurlRunner(logger *zap.SugaredLogger) *CurlRunner {
 	return &r
 }
 
-func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
+func (r *CurlRunner) Run(execution testkube.Execution) testkube.ExecutionResult {
 	var runnerInput CurlRunnerInput
 	err := json.Unmarshal([]byte(execution.ScriptContent), &runnerInput)
 	if err != nil {
-		return kubtest.ExecutionResult{
-			Status: kubtest.ResultError,
+		return testkube.ExecutionResult{
+			Status: testkube.ResultError,
 		}
 	}
 	command := runnerInput.Command[0]
@@ -47,8 +47,8 @@ func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 	output, err := process.Execute(command, runnerInput.Command...)
 	if err != nil {
 		r.Log.Errorf("Error occured when running a command %s", err)
-		return kubtest.ExecutionResult{
-			Status:       kubtest.ResultError,
+		return testkube.ExecutionResult{
+			Status:       testkube.ResultError,
 			ErrorMessage: fmt.Sprintf("Error occured when running a command %s", err),
 		}
 	}
@@ -56,30 +56,30 @@ func (r *CurlRunner) Run(execution kubtest.Execution) kubtest.ExecutionResult {
 	outputString := string(output)
 	responseStatus, err := getResponseCode(outputString)
 	if err != nil {
-		return kubtest.ExecutionResult{
-			Status:       kubtest.ResultError,
+		return testkube.ExecutionResult{
+			Status:       testkube.ResultError,
 			Output:       outputString,
 			ErrorMessage: err.Error(),
 		}
 	}
 	if responseStatus != runnerInput.ExpectedStatus {
-		return kubtest.ExecutionResult{
-			Status:       kubtest.ResultError,
+		return testkube.ExecutionResult{
+			Status:       testkube.ResultError,
 			Output:       outputString,
 			ErrorMessage: fmt.Sprintf("Response statut don't match expected %d got %d", runnerInput.ExpectedStatus, responseStatus),
 		}
 	}
 
 	if !strings.Contains(outputString, runnerInput.ExpectedBody) {
-		return kubtest.ExecutionResult{
-			Status:       kubtest.ResultError,
+		return testkube.ExecutionResult{
+			Status:       testkube.ResultError,
 			Output:       outputString,
 			ErrorMessage: fmt.Sprintf("Response doesn't contain body: %s", runnerInput.ExpectedBody),
 		}
 	}
 
-	return kubtest.ExecutionResult{
-		Status: kubtest.ResultSuceess,
+	return testkube.ExecutionResult{
+		Status: testkube.ResultSuceess,
 		Output: outputString,
 	}
 }

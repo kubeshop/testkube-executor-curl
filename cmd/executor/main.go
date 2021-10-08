@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/kubeshop/kubtest-executor-curl/internal/pkg/storage"
-	"github.com/kubeshop/kubtest-executor-curl/pkg/runner"
-	"github.com/kubeshop/kubtest/pkg/executor/server"
-	"github.com/kubeshop/kubtest/pkg/ui"
+	"github.com/kubeshop/testkube-executor-curl/internal/pkg/storage"
+	"github.com/kubeshop/testkube-executor-curl/pkg/runner"
+	"github.com/kubeshop/testkube/pkg/executor/server"
+	"github.com/kubeshop/testkube/pkg/ui"
 )
 
 func main() {

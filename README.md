@@ -10,18 +10,18 @@
 
 <!-- try to enable it after snyk resolves https://github.com/snyk/snyk/issues/347
 
-Known vulnerabilities: ![kubtest](https://snyk.io/test/github/kubeshop/kubtest/badge.svg)
-![kubtest-operator](https://snyk.io/test/github/kubeshop-operator/kubtest/badge.svg)
+Known vulnerabilities: ![testkube](https://snyk.io/test/github/kubeshop/testkube/badge.svg)
+![testkube-operator](https://snyk.io/test/github/kubeshop-operator/testkube/badge.svg)
 ![helm-charts](https://snyk.io/test/github/kubeshop/helm-charts/badge.svg)
 -->
 
-# Welcome to Kubtest Executor Curl
+# Welcome to testkube Executor Curl
 
-Kubtest Executor Curl is the test executor for [Kubtest](https://kubtest.io) that is using [Curl](https://curl.se/).
+testkube Executor Curl is the test executor for [testkube](https://testkube.io) that is using [Curl](https://curl.se/).
 
 # Issues and enchancements
 
-Please follow to main kubtest repository for reporting any [issues](https://github.com/kubeshop/kubtest/issues) or [discussions](https://github.com/kubeshop/kubtest/discussions)
+Please follow to main testkube repository for reporting any [issues](https://github.com/kubeshop/testkube/issues) or [discussions](https://github.com/kubeshop/testkube/discussions)
 
 ## Details
 
@@ -46,4 +46,4 @@ The type of the test CRD should be `curl/test`.
 
 ## API
 
-Kubtest Executor Curl implements [Kubtest OpenAPI for executors](https://kubeshop.github.io/kubtest/openapi/#operations-tag-executor) (look at executor tag)
+testkube Executor Curl implements [testkube OpenAPI for executors](https://kubeshop.github.io/testkube/openapi/#operations-tag-executor) (look at executor tag)
