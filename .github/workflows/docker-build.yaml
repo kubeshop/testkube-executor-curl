@@ -36,7 +36,7 @@ jobs:
         id: meta_curl_executor
         uses: docker/metadata-action@v3
         with:
-          images: kubeshop/kubtest-curl-executor
+          images: kubeshop/testkube-curl-executor
           tags: |
             type=ref,event=branch
             type=ref,event=pr
