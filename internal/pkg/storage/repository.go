@@ -62,12 +62,12 @@ func (r *MapRepository) QueuePull(ctx context.Context) (testkube.Execution, erro
 		execution = value.(testkube.Execution)
 		//when false is returned range function will exit,
 		//the queued execution is needed so false is returned when the execution has status queued
-		return execution.ExecutionResult.Status != testkube.ResultQueued
+		return *execution.ExecutionResult.Status != testkube.SUCCESS_ExecutionStatus
 	})
 	if len(id) == 0 || !execution.ExecutionResult.IsQueued() {
 		return execution, mongo.ErrNoDocuments
 	}
-	execution.ExecutionResult.Status = testkube.ResultPending
+	execution.ExecutionResult.Status = testkube.StatusPtr(testkube.PENDING_ExecutionStatus)
 	r.data.Store(id, execution)
 	return execution, nil
 }

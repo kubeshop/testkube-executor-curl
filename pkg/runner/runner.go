@@ -34,52 +34,36 @@ func NewCurlRunner(logger *zap.SugaredLogger) *CurlRunner {
 	return &r
 }
 
-func (r *CurlRunner) Run(execution testkube.Execution) testkube.ExecutionResult {
+func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult) {
 	var runnerInput CurlRunnerInput
 	err := json.Unmarshal([]byte(execution.ScriptContent), &runnerInput)
 	if err != nil {
-		return testkube.ExecutionResult{
-			Status: testkube.ResultError,
-		}
+		return result.Err(err)
 	}
 	command := runnerInput.Command[0]
 	runnerInput.Command[0] = CurlAdditionalFlags
 	output, err := process.Execute(command, runnerInput.Command...)
 	if err != nil {
 		r.Log.Errorf("Error occured when running a command %s", err)
-		return testkube.ExecutionResult{
-			Status:       testkube.ResultError,
-			ErrorMessage: fmt.Sprintf("Error occured when running a command %s", err),
-		}
+		return result.Err(err)
 	}
 
 	outputString := string(output)
+	result.Output = outputString
 	responseStatus, err := getResponseCode(outputString)
 	if err != nil {
-		return testkube.ExecutionResult{
-			Status:       testkube.ResultError,
-			Output:       outputString,
-			ErrorMessage: err.Error(),
-		}
+		return result.Err(err)
 	}
 	if responseStatus != runnerInput.ExpectedStatus {
-		return testkube.ExecutionResult{
-			Status:       testkube.ResultError,
-			Output:       outputString,
-			ErrorMessage: fmt.Sprintf("Response statut don't match expected %d got %d", runnerInput.ExpectedStatus, responseStatus),
-		}
+		return result.Err(fmt.Errorf("response statut don't match expected %d got %d", runnerInput.ExpectedStatus, responseStatus))
 	}
 
 	if !strings.Contains(outputString, runnerInput.ExpectedBody) {
-		return testkube.ExecutionResult{
-			Status:       testkube.ResultError,
-			Output:       outputString,
-			ErrorMessage: fmt.Sprintf("Response doesn't contain body: %s", runnerInput.ExpectedBody),
-		}
+		return result.Err(fmt.Errorf("response doesn't contain body: %s", runnerInput.ExpectedBody))
 	}
 
 	return testkube.ExecutionResult{
-		Status: testkube.ResultSuceess,
+		Status: testkube.StatusPtr(testkube.SUCCESS_ExecutionStatus),
 		Output: outputString,
 	}
 }
