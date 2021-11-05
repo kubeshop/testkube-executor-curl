@@ -6,17 +6,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFillCommandTemplateSuccess(t *testing.T) {
+func TestResolveTemplateSuccess(t *testing.T) {
 	assertion := require.New(t)
 	template := "value1 {{.value1}}, value2 {{.value2}}"
 	params := map[string]string{"value1": "1", "value2": "2"}
 
-	result, err := FillCommandTemplate(template, params)
+	result, err := ResolveTemplate(template, params)
 	assertion.NoError(err)
 	assertion.Equal("value1 1, value2 2", result)
 }
 
-func TestFillCommandTemplatesSuccess(t *testing.T) {
+func TestResolveTemplatesSuccess(t *testing.T) {
 	assertion := require.New(t)
 	template1 := "value1 {{.value1}}, value2 {{.value2}}"
 	template2 := "value3 {{.value3}}, value4 {{.value4}}"
@@ -24,7 +24,7 @@ func TestFillCommandTemplatesSuccess(t *testing.T) {
 	params := map[string]string{"value1": "1", "value2": "2", "value3": "3", "value4": "4"}
 	templates := []string{template1, template2, template3}
 
-	err := FillCommandTemplates(templates, params)
+	err := ResolveTemplates(templates, params)
 	assertion.NoError(err)
 	assertion.Equal("value1 1, value2 2", templates[0])
 	assertion.Equal("value3 3, value4 4", templates[1])

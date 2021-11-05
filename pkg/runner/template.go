@@ -5,11 +5,11 @@ import (
 	"text/template"
 )
 
-// FillCommandTemplates fills the command array with the values if they are templated
-func FillCommandTemplates(commandParts []string, params map[string]string) error {
-	for i := range commandParts {
-		finalCommandPart, err := FillCommandTemplate(commandParts[i], params)
-		commandParts[i] = finalCommandPart
+// ResolveTemplates fills the string array with the values if they are templated
+func ResolveTemplates(stringsToResolve []string, params map[string]string) error {
+	for i := range stringsToResolve {
+		finalCommandPart, err := ResolveTemplate(stringsToResolve[i], params)
+		stringsToResolve[i] = finalCommandPart
 		if err != nil {
 			return err
 		}
@@ -18,10 +18,10 @@ func FillCommandTemplates(commandParts []string, params map[string]string) error
 	return nil
 }
 
-// FillCommandTemplate fills a command with the values if they are templated
-func FillCommandTemplate(command string, params map[string]string) (string, error) {
+// ResolveTemplate fills a string with the values if they are templated
+func ResolveTemplate(stringToResolve string, params map[string]string) (string, error) {
 
-	ut, err := template.New("cmd").Parse(command)
+	ut, err := template.New("cmd").Parse(stringToResolve)
 
 	if err != nil {
 		return "", err

@@ -36,10 +36,27 @@ Curl executor is a very simple one, it runs a curl command given as the input an
     "-H",
     "'Accept: application/json'"
   ],
-  "expected_status": 200,
+  "expected_status": "200",
   "expected_body": "{\"success\":\"true\"}"
 }
 ```
+
+Templates can be used to parametrize input
+
+```js
+{
+  "command": [
+    "curl",
+    "{{.url}}",
+    "-H",
+    "'{{.header}}'"
+  ],
+  "expected_status": "{{.status}}",
+  "expected_body": "{{.body}}"
+}
+```
+
+and the parameters will be passed by testkube using param flag ```--param key=value```
 
 the executor will check if the response has `expected_status` and if body of the response contains the `expected_body`.
 

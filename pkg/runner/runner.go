@@ -15,12 +15,6 @@ import (
 
 const CurlAdditionalFlags = "-is"
 
-type CurlRunnerInput struct {
-	Command        []string `json:"command"`
-	ExpectedStatus int      `json:"expected_status"`
-	ExpectedBody   string   `json:"expected_body"`
-}
-
 // CurlRunner is used to run curl commands.
 type CurlRunner struct {
 	Log *zap.SugaredLogger
@@ -37,9 +31,10 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 		return result, err
 	}
 
-	err = FillCommandTemplates(runnerInput.Command, execution.Params)
+	err = runnerInput.FillTemplates(execution.Params)
 	if err != nil {
-		return result, err
+		r.Log.Errorf("Error occured when resolving input templates %s", err)
+		return result.Err(err), nil
 	}
 
 	command := runnerInput.Command[0]
@@ -56,8 +51,14 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	if err != nil {
 		return result.Err(err), nil
 	}
-	if responseStatus != runnerInput.ExpectedStatus {
-		return result.Err(fmt.Errorf("response statut don't match expected %d got %d", runnerInput.ExpectedStatus, responseStatus)), nil
+
+	expectedStatus, err := strconv.Atoi(runnerInput.ExpectedStatus)
+	if err != nil {
+		return result.Err(fmt.Errorf("cannot process expected status %s", runnerInput.ExpectedStatus)), nil
+	}
+
+	if responseStatus != expectedStatus {
+		return result.Err(fmt.Errorf("response statut don't match expected %d got %d", expectedStatus, responseStatus)), nil
 	}
 
 	if !strings.Contains(outputString, runnerInput.ExpectedBody) {
