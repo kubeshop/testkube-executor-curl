@@ -40,6 +40,12 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	if err != nil {
 		return result.Err(err)
 	}
+
+	err = FillCommandTemplates(runnerInput.Command, execution.Params)
+	if err != nil {
+		return result.Err(err)
+	}
+
 	command := runnerInput.Command[0]
 	runnerInput.Command[0] = CurlAdditionalFlags
 	output, err := process.Execute(command, runnerInput.Command...)
