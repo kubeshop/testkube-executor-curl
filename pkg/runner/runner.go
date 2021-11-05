@@ -26,24 +26,20 @@ type CurlRunner struct {
 	Log *zap.SugaredLogger
 }
 
-func NewCurlRunner(logger *zap.SugaredLogger) *CurlRunner {
-	r := CurlRunner{Log: log.DefaultLogger}
-	if logger != nil {
-		r.Log = logger
-	}
-	return &r
+func NewCurlRunner() *CurlRunner {
+	return &CurlRunner{Log: log.DefaultLogger}
 }
 
-func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult) {
+func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
 	var runnerInput CurlRunnerInput
-	err := json.Unmarshal([]byte(execution.ScriptContent), &runnerInput)
+	err = json.Unmarshal([]byte(execution.ScriptContent), &runnerInput)
 	if err != nil {
-		return result.Err(err)
+		return result, err
 	}
 
 	err = FillCommandTemplates(runnerInput.Command, execution.Params)
 	if err != nil {
-		return result.Err(err)
+		return result, err
 	}
 
 	command := runnerInput.Command[0]
@@ -51,27 +47,27 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	output, err := process.Execute(command, runnerInput.Command...)
 	if err != nil {
 		r.Log.Errorf("Error occured when running a command %s", err)
-		return result.Err(err)
+		return result.Err(err), nil
 	}
 
 	outputString := string(output)
 	result.Output = outputString
 	responseStatus, err := getResponseCode(outputString)
 	if err != nil {
-		return result.Err(err)
+		return result.Err(err), nil
 	}
 	if responseStatus != runnerInput.ExpectedStatus {
-		return result.Err(fmt.Errorf("response statut don't match expected %d got %d", runnerInput.ExpectedStatus, responseStatus))
+		return result.Err(fmt.Errorf("response statut don't match expected %d got %d", runnerInput.ExpectedStatus, responseStatus)), nil
 	}
 
 	if !strings.Contains(outputString, runnerInput.ExpectedBody) {
-		return result.Err(fmt.Errorf("response doesn't contain body: %s", runnerInput.ExpectedBody))
+		return result.Err(fmt.Errorf("response doesn't contain body: %s", runnerInput.ExpectedBody)), nil
 	}
 
 	return testkube.ExecutionResult{
 		Status: testkube.StatusPtr(testkube.SUCCESS_ExecutionStatus),
 		Output: outputString,
-	}
+	}, nil
 }
 
 func getResponseCode(curlOutput string) (int, error) {

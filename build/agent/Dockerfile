@@ -1,5 +1,16 @@
+# syntax=docker/dockerfile:1
 FROM golang:1.17
-RUN apt update && apt install -y curl
-WORKDIR /
-ADD . /
-RUN go build -o /usr/local/bin/agent cmd/agent/main.go 
+WORKDIR /build
+COPY . .
+ENV CGO_ENABLED=0 
+ENV GOOS=linux
+
+RUN cd cmd/agent;go build -o /runner -mod mod -a .
+
+# TODO add valid dockerfile with executor
+FROM alpine
+RUN apk --no-cache add ca-certificates && \
+    apk --no-cache add curl
+WORKDIR /root/
+COPY --from=0 /runner /bin/runner
+ENTRYPOINT ["/bin/runner"]
