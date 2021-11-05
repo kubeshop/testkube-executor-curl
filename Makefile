@@ -1,29 +1,15 @@
 .PHONY: test cover 
 
-CHART_NAME=curl-executor
 NAME ?= curl
 BIN_DIR ?= $(HOME)/bin
-GITHUB_TOKEN ?= "SET_ME"
-USER ?= $(USER)
-NAMESPACE ?= "example-ns"
-DATE ?= $(shell date -u --iso-8601=seconds)
-COMMIT ?= $(shell git log -1 --pretty=format:"%h")
 
-# TODO bump this port up - to be able to run multiple executors on devs machine
-run-executor: 
-	EXECUTOR_PORT=8083 go run cmd/executor/main.go
-
-run-mongo-dev: 
-	docker run -p 27017:27017 mongo
-
+run: 
+	cat test/example.json | go run cmd/agent/main.go
 
 build: 
-	go build -o $(BIN_DIR)/$(NAME)-executor cmd/executor/main.go
+	go build -o $(BIN_DIR)/$(NAME)-executor cmd/agent/main.go
 
-docker-build-executor: 
-	docker build -t $(NAME)-executor -f build/executor/Dockerfile .
-
-docker-build-runner: 
+docker-build: 
 	docker build -t kubeshop/$(NAME)-runner:latest -f build/agent/Dockerfile .
 
 install-swagger-codegen-mac: 
@@ -52,9 +38,3 @@ version-bump-major:
 
 version-bump-dev:
 	go run cmd/tools/main.go bump --dev
-
-prerelease: 
-	go run cmd/tools/main.go release -d -a $(CHART_NAME)
-
-release: 
-	go run cmd/tools/main.go release -a $(CHART_NAME)
