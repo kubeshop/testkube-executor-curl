@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
+	"github.com/kubeshop/testkube/pkg/executor"
 	"github.com/kubeshop/testkube/pkg/log"
-	"github.com/kubeshop/testkube/pkg/process"
 	"go.uber.org/zap"
 )
 
@@ -38,8 +38,16 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	}
 
 	command := runnerInput.Command[0]
+	if command != "curl" {
+		return result, fmt.Errorf("you can run only `curl` commands with this executor but passed: `%s`", command)
+	}
+
 	runnerInput.Command[0] = CurlAdditionalFlags
-	output, err := process.Execute(command, runnerInput.Command...)
+
+	args := runnerInput.Command
+	args = append(args, execution.Args...)
+
+	output, err := executor.Run("", command, args...)
 	if err != nil {
 		r.Log.Errorf("Error occured when running a command %s", err)
 		return result.Err(err), nil
