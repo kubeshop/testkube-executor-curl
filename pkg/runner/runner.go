@@ -39,8 +39,7 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	}
 
 	if !execution.Content.IsFile() {
-		result.WithErrors(fmt.Errorf("unsupported content type use one of: file-uri, git-file, string"))
-		return
+		return result, fmt.Errorf("unsupported content type use one of: file-uri, git-file, string")
 	}
 
 	content, err := ioutil.ReadFile(path)
