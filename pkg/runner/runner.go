@@ -3,12 +3,14 @@ package runner
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
 	"github.com/kubeshop/testkube/pkg/executor"
+	"github.com/kubeshop/testkube/pkg/executor/content"
 	"github.com/kubeshop/testkube/pkg/log"
 	"go.uber.org/zap"
 )
@@ -17,16 +19,36 @@ const CurlAdditionalFlags = "-is"
 
 // CurlRunner is used to run curl commands.
 type CurlRunner struct {
-	Log *zap.SugaredLogger
+	Fetcher content.ContentFetcher
+	Log     *zap.SugaredLogger
 }
 
 func NewCurlRunner() *CurlRunner {
-	return &CurlRunner{Log: log.DefaultLogger}
+	return &CurlRunner{
+		Log:     log.DefaultLogger,
+		Fetcher: content.NewFetcher(),
+	}
 }
 
 func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
 	var runnerInput CurlRunnerInput
-	err = json.Unmarshal([]byte(execution.ScriptContent), &runnerInput)
+
+	path, err := r.Fetcher.Fetch(execution.Content)
+	if err != nil {
+		return result, err
+	}
+
+	if !execution.Content.IsFile() {
+		result.WithErrors(fmt.Errorf("unsupported content type use one of: file-uri, git-file, string"))
+		return
+	}
+
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return result, err
+	}
+
+	err = json.Unmarshal(content, &runnerInput)
 	if err != nil {
 		return result, err
 	}
