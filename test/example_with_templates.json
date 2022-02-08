@@ -1,5 +1,0 @@
-{
-	"id": "blablablablabla",
-	"name": "some-testing-exec",
-	"scriptContent": "{ \"command\": [ \"curl\", \"{{.url}}\", \"-H\", \"'{{.header}}'\" ], \"expected_status\": {{.status}}, \"expected_body\": \"{{.body}}\" }"
-}
