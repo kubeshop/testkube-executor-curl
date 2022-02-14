@@ -39,7 +39,7 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	}
 
 	if !execution.Content.IsFile() {
-		return result, testkube.ErrScriptContentTypeNotFile
+		return result, testkube.ErrTestContentTypeNotFile
 	}
 
 	content, err := ioutil.ReadFile(path)
