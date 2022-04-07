@@ -26,7 +26,7 @@ type CurlRunner struct {
 func NewCurlRunner() *CurlRunner {
 	return &CurlRunner{
 		Log:     log.DefaultLogger,
-		Fetcher: content.NewFetcher(),
+		Fetcher: content.NewFetcher(""),
 	}
 }
 
@@ -95,7 +95,7 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	}
 
 	return testkube.ExecutionResult{
-		Status: testkube.StatusPtr(testkube.SUCCESS_ExecutionStatus),
+		Status: testkube.ExecutionStatusPassed,
 		Output: outputString,
 	}, nil
 }
