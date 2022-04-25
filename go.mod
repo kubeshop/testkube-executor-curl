@@ -1,6 +1,6 @@
 module github.com/kubeshop/testkube-executor-curl
 
-go 1.17
+go 1.18
 
 require (
 	github.com/kubeshop/testkube v0.11.14
