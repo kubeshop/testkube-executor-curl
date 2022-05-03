@@ -10,7 +10,7 @@ RUN cd cmd/agent;go build -o /runner -mod mod -a .
 # TODO add valid dockerfile with executor
 FROM alpine
 RUN apk --no-cache add ca-certificates && \
-    apk --no-cache add curl
+    apk --no-cache add curl git
 WORKDIR /root/
 COPY --from=0 /runner /bin/runner
 ENTRYPOINT ["/bin/runner"]
