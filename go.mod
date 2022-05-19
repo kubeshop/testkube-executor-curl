@@ -3,7 +3,7 @@ module github.com/kubeshop/testkube-executor-curl
 go 1.18
 
 require (
-	github.com/kubeshop/testkube v1.0.14
+	github.com/kubeshop/testkube v1.1.10
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/zap v1.20.0
 )
