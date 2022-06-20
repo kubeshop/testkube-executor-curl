@@ -3,7 +3,7 @@ package runner
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -42,7 +42,7 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 		return result, testkube.ErrTestContentTypeNotFile
 	}
 
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return result, err
 	}
