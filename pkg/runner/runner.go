@@ -13,6 +13,7 @@ import (
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
 	"github.com/kubeshop/testkube/pkg/executor"
 	"github.com/kubeshop/testkube/pkg/executor/content"
+	"github.com/kubeshop/testkube/pkg/executor/secret"
 	"github.com/kubeshop/testkube/pkg/log"
 	"go.uber.org/zap"
 )
@@ -81,6 +82,7 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 		return result, err
 	}
 
+	secret.NewEnvManager().GetVars(execution.Variables)
 	variables := testkube.VariablesToMap(execution.Variables)
 	err = runnerInput.FillTemplates(variables)
 	if err != nil {
