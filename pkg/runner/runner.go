@@ -12,7 +12,7 @@ import (
 
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
 	"github.com/kubeshop/testkube/pkg/executor"
-	"github.com/kubeshop/testkube/pkg/executor/content"
+	contentPkg "github.com/kubeshop/testkube/pkg/executor/content"
 	"github.com/kubeshop/testkube/pkg/executor/secret"
 	"github.com/kubeshop/testkube/pkg/log"
 	"go.uber.org/zap"
@@ -36,7 +36,7 @@ const CurlAdditionalFlags = "-is"
 // CurlRunner is used to run curl commands.
 type CurlRunner struct {
 	Params  Params
-	Fetcher content.ContentFetcher
+	Fetcher contentPkg.ContentFetcher
 	Log     *zap.SugaredLogger
 }
 
@@ -50,7 +50,7 @@ func NewCurlRunner() *CurlRunner {
 	return &CurlRunner{
 		Log:     log.DefaultLogger,
 		Params:  params,
-		Fetcher: content.NewFetcher(""),
+		Fetcher: contentPkg.NewFetcher(""),
 	}
 }
 
@@ -88,6 +88,12 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	if err != nil {
 		r.Log.Errorf("Error occured when resolving input templates %s", err)
 		return result.Err(err), nil
+	}
+
+	// add configuration files
+	err = contentPkg.PlaceFiles(execution.CopyFiles)
+	if err != nil {
+		return result.Err(fmt.Errorf("could not place config files: %w", err)), nil
 	}
 
 	command := runnerInput.Command[0]
