@@ -82,7 +82,8 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 		return result, err
 	}
 
-	secret.NewEnvManager().GetVars(execution.Variables)
+	envManager := secret.NewEnvManagerWithVars(execution.Variables)
+	envManager.GetVars(execution.Variables)
 	variables := testkube.VariablesToMap(execution.Variables)
 	err = runnerInput.FillTemplates(variables)
 	if err != nil {
@@ -106,7 +107,9 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	args := runnerInput.Command
 	args = append(args, execution.Args...)
 
-	output, err := executor.Run("", command, args...)
+	output, err := executor.Run("", command, envManager, args...)
+	output = envManager.Obfuscate(output)
+
 	if err != nil {
 		r.Log.Errorf("Error occured when running a command %s", err)
 		return result.Err(err), nil
