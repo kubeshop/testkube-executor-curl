@@ -91,12 +91,6 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 		return result.Err(err), nil
 	}
 
-	// add configuration files
-	err = contentPkg.PlaceFiles(execution.CopyFiles)
-	if err != nil {
-		return result.Err(fmt.Errorf("could not place config files: %w", err)), nil
-	}
-
 	command := runnerInput.Command[0]
 	if command != "curl" {
 		return result, fmt.Errorf("you can run only `curl` commands with this executor but passed: `%s`", command)
