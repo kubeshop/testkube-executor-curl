@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -29,6 +30,7 @@ type Params struct {
 	ScrapperEnabled bool   // RUNNER_SCRAPPERENABLED
 	GitUsername     string // RUNNER_GITUSERNAME
 	GitToken        string // RUNNER_GITTOKEN
+	DataDir         string // RUNNER_DATADIR
 }
 
 const CurlAdditionalFlags = "-is"
@@ -101,7 +103,12 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	args := runnerInput.Command
 	args = append(args, execution.Args...)
 
-	output, err := executor.Run("", command, envManager, args...)
+	runPath := ""
+	if execution.Content.Repository != nil {
+		runPath = filepath.Join(r.Params.DataDir, "repo", execution.Content.Repository.WorkingDir)
+	}
+
+	output, err := executor.Run(runPath, command, envManager, args...)
 	output = envManager.Obfuscate(output)
 
 	if err != nil {
