@@ -104,7 +104,7 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	args = append(args, execution.Args...)
 
 	runPath := ""
-	if execution.Content.Repository != nil {
+	if execution.Content.Repository != nil && execution.Content.Repository.WorkingDir != "" {
 		runPath = filepath.Join(r.Params.DataDir, "repo", execution.Content.Repository.WorkingDir)
 	}
 
