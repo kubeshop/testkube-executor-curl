@@ -14,6 +14,7 @@ import (
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
 	"github.com/kubeshop/testkube/pkg/executor"
 	contentPkg "github.com/kubeshop/testkube/pkg/executor/content"
+	"github.com/kubeshop/testkube/pkg/executor/runner"
 	"github.com/kubeshop/testkube/pkg/executor/secret"
 	"github.com/kubeshop/testkube/pkg/log"
 	"go.uber.org/zap"
@@ -58,7 +59,7 @@ func NewCurlRunner() *CurlRunner {
 
 func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
 	var runnerInput CurlRunnerInput
-	if r.Params.GitUsername != "" && r.Params.GitToken != "" {
+	if r.Params.GitUsername != "" || r.Params.GitToken != "" {
 		if execution.Content != nil && execution.Content.Repository != nil {
 			execution.Content.Repository.Username = r.Params.GitUsername
 			execution.Content.Repository.Token = r.Params.GitToken
@@ -149,4 +150,9 @@ func getResponseCode(curlOutput string) (int, error) {
 		return -1, fmt.Errorf("could not find a response status in the command output")
 	}
 	return strconv.Atoi(matches[1])
+}
+
+// GetType returns runner type
+func (r *CurlRunner) GetType() runner.Type {
+	return runner.TypeMain
 }
