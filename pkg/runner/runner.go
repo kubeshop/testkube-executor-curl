@@ -86,8 +86,8 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	}
 
 	envManager := secret.NewEnvManagerWithVars(execution.Variables)
-	envManager.GetVars(execution.Variables)
-	variables := testkube.VariablesToMap(execution.Variables)
+	envManager.GetVars(envManager.Variables)
+	variables := testkube.VariablesToMap(envManager.Variables)
 	err = runnerInput.FillTemplates(variables)
 	if err != nil {
 		r.Log.Errorf("Error occured when resolving input templates %s", err)
