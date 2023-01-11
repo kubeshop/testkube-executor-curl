@@ -12,7 +12,7 @@ import (
 func main() {
 	r, err := runner.NewCurlRunner()
 	if err != nil {
-		log.Fatalf("%s Could not run cURL tests: %w", ui.IconCross, err)
+		log.Fatalf("%s Could not run cURL tests: %s", ui.IconCross, err.Error())
 	}
 
 	agent.Run(r, os.Args)
