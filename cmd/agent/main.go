@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/kubeshop/testkube-executor-curl/pkg/runner"
@@ -12,7 +12,7 @@ import (
 func main() {
 	r, err := runner.NewCurlRunner()
 	if err != nil {
-		panic(fmt.Errorf("%s Could not run cURL tests: %w", ui.IconCross, err))
+		log.Fatalf("%s Could not run cURL tests: %w", ui.IconCross, err)
 	}
 
 	agent.Run(r, os.Args)
