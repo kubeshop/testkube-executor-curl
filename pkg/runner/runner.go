@@ -9,55 +9,43 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kelseyhightower/envconfig"
-
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
+	"github.com/kubeshop/testkube/pkg/envs"
 	"github.com/kubeshop/testkube/pkg/executor"
 	contentPkg "github.com/kubeshop/testkube/pkg/executor/content"
+	outputPkg "github.com/kubeshop/testkube/pkg/executor/output"
 	"github.com/kubeshop/testkube/pkg/executor/runner"
 	"github.com/kubeshop/testkube/pkg/executor/secret"
 	"github.com/kubeshop/testkube/pkg/log"
+	"github.com/kubeshop/testkube/pkg/ui"
 	"go.uber.org/zap"
 )
-
-// Params ...
-type Params struct {
-	Endpoint        string // RUNNER_ENDPOINT
-	AccessKeyID     string // RUNNER_ACCESSKEYID
-	SecretAccessKey string // RUNNER_SECRETACCESSKEY
-	Location        string // RUNNER_LOCATION
-	Token           string // RUNNER_TOKEN
-	Ssl             bool   // RUNNER_SSL
-	ScrapperEnabled bool   // RUNNER_SCRAPPERENABLED
-	GitUsername     string // RUNNER_GITUSERNAME
-	GitToken        string // RUNNER_GITTOKEN
-	DataDir         string // RUNNER_DATADIR
-}
 
 const CurlAdditionalFlags = "-is"
 
 // CurlRunner is used to run curl commands.
 type CurlRunner struct {
-	Params  Params
+	Params  envs.Params
 	Fetcher contentPkg.ContentFetcher
 	Log     *zap.SugaredLogger
 }
 
-func NewCurlRunner() *CurlRunner {
-	var params Params
-	err := envconfig.Process("runner", &params)
+func NewCurlRunner() (*CurlRunner, error) {
+	outputPkg.PrintLog(fmt.Sprintf("%s Preparing test runner", ui.IconTruck))
+	params, err := envs.LoadTestkubeVariables()
 	if err != nil {
-		panic(err.Error())
+		return nil, fmt.Errorf("could not initialize cURL runner variables: %w", err)
 	}
 
 	return &CurlRunner{
 		Log:     log.DefaultLogger,
 		Params:  params,
 		Fetcher: contentPkg.NewFetcher(""),
-	}
+	}, nil
 }
 
 func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
+	outputPkg.PrintLog(fmt.Sprintf("%s Preparing for test run", ui.IconTruck))
 	var runnerInput CurlRunnerInput
 	if r.Params.GitUsername != "" || r.Params.GitToken != "" {
 		if execution.Content != nil && execution.Content.Repository != nil {
@@ -88,14 +76,19 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	envManager := secret.NewEnvManagerWithVars(execution.Variables)
 	envManager.GetVars(envManager.Variables)
 	variables := testkube.VariablesToMap(envManager.Variables)
+
+	outputPkg.PrintLog(fmt.Sprintf("%s Filling in the input templates", ui.IconKey))
 	err = runnerInput.FillTemplates(variables)
 	if err != nil {
+		outputPkg.PrintLog(fmt.Sprintf("%s Failed to fill in the input templates: %s", ui.IconCross, err.Error()))
 		r.Log.Errorf("Error occured when resolving input templates %s", err)
 		return result.Err(err), nil
 	}
+	outputPkg.PrintLog(fmt.Sprintf("%s Successfully filled the input templates", ui.IconCheckMark))
 
 	command := runnerInput.Command[0]
 	if command != "curl" {
+		outputPkg.PrintLog(fmt.Sprintf("%s you can run only `curl` commands with this executor but passed: `%s`", ui.IconCross, command))
 		return result, fmt.Errorf("you can run only `curl` commands with this executor but passed: `%s`", command)
 	}
 
@@ -121,21 +114,27 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	result.Output = outputString
 	responseStatus, err := getResponseCode(outputString)
 	if err != nil {
+		outputPkg.PrintLog(fmt.Sprintf("%s Test run failed: %s", ui.IconCross, err.Error()))
 		return result.Err(err), nil
 	}
 
 	expectedStatus, err := strconv.Atoi(runnerInput.ExpectedStatus)
 	if err != nil {
+		outputPkg.PrintLog(fmt.Sprintf("%s Test run failed: cannot process expected status: %s", ui.IconCross, err.Error()))
 		return result.Err(fmt.Errorf("cannot process expected status %s", runnerInput.ExpectedStatus)), nil
 	}
 
 	if responseStatus != expectedStatus {
-		return result.Err(fmt.Errorf("response statut don't match expected %d got %d", expectedStatus, responseStatus)), nil
+		outputPkg.PrintLog(fmt.Sprintf("%s Test run failed: cannot process expected status: %s", ui.IconCross, err.Error()))
+		return result.Err(fmt.Errorf("response status don't match expected %d got %d", expectedStatus, responseStatus)), nil
 	}
 
 	if !strings.Contains(outputString, runnerInput.ExpectedBody) {
+		outputPkg.PrintLog(fmt.Sprintf("%s Test run failed: response doesn't contain body: %s", ui.IconCross, runnerInput.ExpectedBody))
 		return result.Err(fmt.Errorf("response doesn't contain body: %s", runnerInput.ExpectedBody)), nil
 	}
+
+	outputPkg.PrintLog(fmt.Sprintf("%s Test run succeeded", ui.IconCheckMark))
 
 	return testkube.ExecutionResult{
 		Status: testkube.ExecutionStatusPassed,
