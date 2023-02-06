@@ -82,7 +82,7 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	if err != nil {
 		outputPkg.PrintLog(fmt.Sprintf("%s Failed to fill in the input templates: %s", ui.IconCross, err.Error()))
 		r.Log.Errorf("Error occured when resolving input templates %s", err)
-		return result.Err(err), nil
+		return *result.Err(err), nil
 	}
 	outputPkg.PrintLog(fmt.Sprintf("%s Successfully filled the input templates", ui.IconCheckMark))
 
@@ -107,7 +107,7 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 
 	if err != nil {
 		r.Log.Errorf("Error occured when running a command %s", err)
-		return result.Err(err), nil
+		return *result.Err(err), nil
 	}
 
 	outputString := string(output)
@@ -115,23 +115,23 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	responseStatus, err := getResponseCode(outputString)
 	if err != nil {
 		outputPkg.PrintLog(fmt.Sprintf("%s Test run failed: %s", ui.IconCross, err.Error()))
-		return result.Err(err), nil
+		return *result.Err(err), nil
 	}
 
 	expectedStatus, err := strconv.Atoi(runnerInput.ExpectedStatus)
 	if err != nil {
 		outputPkg.PrintLog(fmt.Sprintf("%s Test run failed: cannot process expected status: %s", ui.IconCross, err.Error()))
-		return result.Err(fmt.Errorf("cannot process expected status %s", runnerInput.ExpectedStatus)), nil
+		return *result.Err(fmt.Errorf("cannot process expected status %s", runnerInput.ExpectedStatus)), nil
 	}
 
 	if responseStatus != expectedStatus {
 		outputPkg.PrintLog(fmt.Sprintf("%s Test run failed: cannot process expected status: %s", ui.IconCross, err.Error()))
-		return result.Err(fmt.Errorf("response status don't match expected %d got %d", expectedStatus, responseStatus)), nil
+		return *result.Err(fmt.Errorf("response status don't match expected %d got %d", expectedStatus, responseStatus)), nil
 	}
 
 	if !strings.Contains(outputString, runnerInput.ExpectedBody) {
 		outputPkg.PrintLog(fmt.Sprintf("%s Test run failed: response doesn't contain body: %s", ui.IconCross, runnerInput.ExpectedBody))
-		return result.Err(fmt.Errorf("response doesn't contain body: %s", runnerInput.ExpectedBody)), nil
+		return *result.Err(fmt.Errorf("response doesn't contain body: %s", runnerInput.ExpectedBody)), nil
 	}
 
 	outputPkg.PrintLog(fmt.Sprintf("%s Test run succeeded", ui.IconCheckMark))
