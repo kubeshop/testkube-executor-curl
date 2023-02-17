@@ -13,9 +13,9 @@ import (
 	"github.com/kubeshop/testkube/pkg/envs"
 	"github.com/kubeshop/testkube/pkg/executor"
 	contentPkg "github.com/kubeshop/testkube/pkg/executor/content"
+	"github.com/kubeshop/testkube/pkg/executor/env"
 	outputPkg "github.com/kubeshop/testkube/pkg/executor/output"
 	"github.com/kubeshop/testkube/pkg/executor/runner"
-	"github.com/kubeshop/testkube/pkg/executor/secret"
 	"github.com/kubeshop/testkube/pkg/log"
 	"github.com/kubeshop/testkube/pkg/ui"
 	"go.uber.org/zap"
@@ -73,8 +73,8 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 		return result, err
 	}
 
-	envManager := secret.NewEnvManagerWithVars(execution.Variables)
-	envManager.GetVars(envManager.Variables)
+	envManager := env.NewManagerWithVars(execution.Variables)
+	envManager.GetReferenceVars(envManager.Variables)
 	variables := testkube.VariablesToMap(envManager.Variables)
 
 	outputPkg.PrintLog(fmt.Sprintf("%s Filling in the input templates", ui.IconKey))
@@ -103,7 +103,7 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 	}
 
 	output, err := executor.Run(runPath, command, envManager, args...)
-	output = envManager.Obfuscate(output)
+	output = envManager.ObfuscateSecrets(output)
 
 	if err != nil {
 		r.Log.Errorf("Error occured when running a command %s", err)
