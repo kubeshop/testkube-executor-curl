@@ -59,7 +59,12 @@ func (r *CurlRunner) Run(execution testkube.Execution) (result testkube.Executio
 		return result, err
 	}
 
-	if !execution.Content.IsFile() {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return result, err
+	}
+
+	if fileInfo.IsDir() {
 		return result, testkube.ErrTestContentTypeNotFile
 	}
 
