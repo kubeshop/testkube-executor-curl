@@ -40,7 +40,7 @@ func NewCurlRunner() (*CurlRunner, error) {
 	return &CurlRunner{
 		Log:     log.DefaultLogger,
 		Params:  params,
-		Fetcher: contentPkg.NewFetcher(""),
+		Fetcher: contentPkg.NewFetcher(params.DataDir),
 	}, nil
 }
 
